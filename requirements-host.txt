@@ -1,0 +1,17 @@
+# Host x86_64 tooling: model download, GPTQ/SpinQuant, GGUF export, quality eval.
+# This is intentionally separate from requirements.txt (the board/runtime deps).
+-r requirements.txt
+huggingface_hub>=0.23
+transformers>=4.44
+torch>=2.2
+accelerate>=0.30
+sentencepiece>=0.2
+protobuf>=4.25
+safetensors>=0.4
+datasets>=2.20
+lm-eval>=0.4.4
+
+# Optional CPU/GPU GGUF runtime used by the "gguf" backend and eval_ppl.sh.
+# Build with the flags matching your machine (see llama-cpp-python docs):
+#   CMAKE_ARGS="-DGGML_CUDA=on" pip install llama-cpp-python
+# llama-cpp-python>=0.2.90
