@@ -1,0 +1,87 @@
+# NanoPi-R6C-LLM runtime configuration.
+# Relative paths are resolved against the repository root (see src/nano_llm/config.py).
+
+app:
+  name: nano-llm-r6c
+  log_level: INFO
+  log_file: logs/nano_llm.log
+  seed: 42
+
+model:
+  # Candidate: Qwen/Qwen2.5-7B-Instruct (recommended), meta-llama/Llama-3.1-8B-Instruct,
+  # deepseek-ai/DeepSeek-R1-Distill-Qwen-7B.
+  name: Qwen/Qwen2.5-7B-Instruct
+  # mock | hf | gguf | rkllm
+  backend: mock
+  # Local model directory (.safetensors) or .gguf/.rkllm file. Empty = use `name`.
+  path: ""
+  tokenizer_path: ""
+  device: cpu
+  dtype: float16
+  max_context: 4096
+  max_new_tokens: 512
+  temperature: 0.2
+  top_p: 0.9
+  top_k: 40
+  repeat_penalty: 1.1
+  system_prompt: >-
+    Bạn là trợ lý AI chạy cục bộ trên thiết bị biên NanoPi-R6C. Trả lời ngắn gọn,
+    chính xác bằng tiếng Việt; nếu không chắc chắn hãy nói rõ.
+  trust_remote_code: false
+
+llamacpp:
+  binary: llama-cli
+  n_threads: 4
+  n_gpu_layers: 0
+  n_batch: 512
+  flash_attn: false
+  # rk-llama.cpp (Hướng B): ví dụ "Q8_0:W8A8_LOWRANK" hoặc JSON mapping.
+  # Xem https://github.com/invisiofficial/rk-llama.cpp/blob/rknpu2/ggml/src/ggml-rknpu2/README.md
+  rknpu_hybrid: ""
+  extra_args: []
+
+rkllm:
+  library_path: models/librkllmrt.so
+  target_platform: rk3588
+  num_npu_core: 3
+  timeout_seconds: 180
+  enable_thinking: false
+
+api:
+  host: 0.0.0.0
+  port: 8080
+  api_key: ""
+
+bench:
+  prompt_tokens: [128, 512, 1024, 2048, 4096]
+  gen_tokens: 256
+  runs: 3
+  warmup: 1
+  results_dir: data/results
+
+eval:
+  tasks: [mmlu, arc_challenge, hellaswag, gsm8k, ifeval]
+  limit: 200
+  output_dir: data/results
+  ppl_corpus: data/corpus/wikitext-2-raw-val.txt
+  ppl_chunks: 64
+  # Local JSON/JSONL or a HuggingFace dataset id, e.g. "tridm/VMLU".
+  vmlu_dataset: ""
+  vmlu_split: validation
+  vmlu_limit: 500
+  vmlu_subjects: []
+  prompts_vi: eval/prompts_vi.jsonl
+  prompts_en: eval/prompts_en.jsonl
+
+power:
+  # synthetic | serial | file | adc | manual
+  meter: synthetic
+  serial_port: /dev/ttyUSB0
+  baud: 115200
+  input_file: ""
+  adc_raw_path: /sys/devices/platform/fec10000.saradc/iio:device0/in_voltage2_raw
+  adc_scale: 3.0
+  adc_vref: 1.8
+  adc_bits: 12
+  interval_s: 1.0
+  out: data/results/power.csv
