@@ -1,0 +1,19 @@
+[Unit]
+Description=NanoPi-R6C-LLM OpenAI-compatible server
+After=network.target
+
+[Service]
+Type=simple
+User=pi
+WorkingDirectory=/home/pi/NanoPi-R6C-LLM
+Environment=PYTHONUNBUFFERED=1
+Environment=LD_LIBRARY_PATH=/home/pi/NanoPi-R6C-LLM/models:/home/pi/NanoPi-R6C-LLM/lib
+Environment=RKLLM_LOG_LEVEL=1
+ExecStart=/home/pi/NanoPi-R6C-LLM/.venv/bin/python run.py --config config/config.yaml
+Restart=on-failure
+RestartSec=3
+LimitNOFILE=65536
+MemoryMax=7G
+
+[Install]
+WantedBy=multi-user.target
