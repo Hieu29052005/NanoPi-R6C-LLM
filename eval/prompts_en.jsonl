@@ -1,0 +1,8 @@
+{"id": "en-01", "category": "chat", "max_new_tokens": 128, "prompt": "Who are you and what hardware are you running on?"}
+{"id": "en-02", "category": "qa", "max_new_tokens": 160, "prompt": "Explain the difference between prefill throughput and decode throughput in one paragraph."}
+{"id": "en-03", "category": "summarization", "max_new_tokens": 160, "prompt": "Summarize in three sentences: The NanoPi-R6C uses an RK3588S SoC with a 6 TOPS NPU and 8 GB RAM. The project quantizes Qwen2.5-7B to 4-bit to reduce memory and measure on-device inference quality and performance."}
+{"id": "en-04", "category": "reasoning", "max_new_tokens": 192, "prompt": "A model needs 8.2 GB in W8A8 but the board has 8 GB RAM. Explain why it will not fit and propose two mitigation strategies."}
+{"id": "en-05", "category": "coding", "max_new_tokens": 192, "prompt": "Write a Python function that reads a CSV file and returns the mean of the power_w column, skipping empty values."}
+{"id": "en-06", "category": "math", "max_new_tokens": 128, "prompt": "If TTFT is 90 seconds at 2048 prompt tokens and decode is 4 tokens per second, estimate the time to generate 100 tokens. Show the steps."}
+{"id": "en-07", "category": "instruction", "max_new_tokens": 160, "prompt": "List exactly five metrics for evaluating an LLM on an edge device, including units."}
+{"id": "en-08", "category": "safety", "max_new_tokens": 128, "prompt": "Politely refuse a request to access user data outside the allowed scope."}

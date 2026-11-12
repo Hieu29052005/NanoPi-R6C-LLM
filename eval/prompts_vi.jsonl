@@ -1,0 +1,16 @@
+{"id": "vi-01", "category": "chat", "max_new_tokens": 128, "prompt": "Xin chào, bạn là ai và đang chạy trên thiết bị gì?"}
+{"id": "vi-02", "category": "chat", "max_new_tokens": 128, "prompt": "Giải thích ngắn gọn sự khác nhau giữa TTFT và tốc độ decode."}
+{"id": "vi-03", "category": "summarization", "max_new_tokens": 160, "prompt": "Tóm tắt trong 3 câu: NanoPi-R6C dùng SoC RK3588S, NPU 6 TOPS, RAM 8 GB. Thiết bị chạy Linux và phù hợp cho suy luận AI tại biên. Dự án lượng tử hoá Qwen2.5-7B xuống 4-bit để giảm bộ nhớ."}
+{"id": "vi-04", "category": "summarization", "max_new_tokens": 160, "prompt": "Tóm tắt đoạn sau: Để lượng tử hoá mô hình, nhóm dùng PTQ kết hợp SpinQuant. Sau đó mô hình được chuyển sang GGUF và chạy trên thiết bị biên. Chất lượng được đo bằng PPL, MMLU, VMLU; hiệu năng đo bằng TTFT, decode speed và RAM."}
+{"id": "vi-05", "category": "qa", "max_new_tokens": 96, "prompt": "Vì sao RK3588S không chạy được W4A8 cho LLM?"}
+{"id": "vi-06", "category": "qa", "max_new_tokens": 96, "prompt": "W8A8 và W4A16 khác nhau ở điểm nào khi lượng tử hoá LLM?"}
+{"id": "vi-07", "category": "reasoning", "max_new_tokens": 192, "prompt": "Một thiết bị có 8 GB RAM, mô hình W8A8 chiếm 8,2 GB. Hãy giải thích ngắn gọn vì sao mô hình này khó chạy và nêu hai hướng khắc phục."}
+{"id": "vi-08", "category": "reasoning", "max_new_tokens": 192, "prompt": "Nếu TTFT là 90 giây với prompt 2048 token và decode là 4 token/giây, hãy ước lượng thời gian để sinh 100 token."}
+{"id": "vi-09", "category": "safety", "max_new_tokens": 128, "prompt": "Viết một cảnh báo an ninh ngắn khi phát hiện 3 người xâm nhập vùng cấm A trong 12 giây."}
+{"id": "vi-10", "category": "safety", "max_new_tokens": 128, "prompt": "Từ chối lịch sự một yêu cầu truy cập dữ liệu người dùng ngoài phạm vi cho phép."}
+{"id": "vi-11", "category": "coding", "max_new_tokens": 192, "prompt": "Viết hàm Python đọc file CSV và trả về trung bình cột power_w, bỏ qua giá trị rỗng."}
+{"id": "vi-12", "category": "coding", "max_new_tokens": 192, "prompt": "Viết lệnh bash kiểm tra dung lượng RAM còn trống trên Linux."}
+{"id": "vi-13", "category": "translation", "max_new_tokens": 96, "prompt": "Dịch sang tiếng Anh: Thiết bị đang chạy ổn định và tiêu thụ khoảng 6 watt."}
+{"id": "vi-14", "category": "translation", "max_new_tokens": 96, "prompt": "Dịch sang tiếng Việt: The model must fit within the 4 GB IOMMU domain."}
+{"id": "vi-15", "category": "math", "max_new_tokens": 96, "prompt": "Tính 12 nhân 7 rồi cộng 36. Trình bày từng bước ngắn gọn."}
+{"id": "vi-16", "category": "instruction", "max_new_tokens": 160, "prompt": "Liệt kê đúng 5 chỉ số cần đo khi đánh giá LLM trên thiết bị biên, mỗi chỉ số kèm đơn vị."}
