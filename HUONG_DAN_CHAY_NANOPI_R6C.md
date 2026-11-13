@@ -174,11 +174,11 @@ Model sẽ nằm ở `models/Qwen2.5-7B-Instruct/`.
 
 Các ứng viên:
 
-| Key | Repo | License |
-|---|---|---|
-| `qwen2.5-7b` | `Qwen/Qwen2.5-7B-Instruct` | Apache-2.0 — khuyến nghị |
-| `llama-3.1-8b` | `meta-llama/Llama-3.1-8B-Instruct` | Llama 3.1 Community (gated) |
-| `deepseek-r1-distill-7b` | `deepseek-ai/DeepSeek-R1-Distill-Qwen-7B` | kiểm tra model card |
+| Key                        | Repo                                        | License                     |
+| -------------------------- | ------------------------------------------- | --------------------------- |
+| `qwen2.5-7b`             | `Qwen/Qwen2.5-7B-Instruct`                | Apache-2.0 — khuyến nghị |
+| `llama-3.1-8b`           | `meta-llama/Llama-3.1-8B-Instruct`        | Llama 3.1 Community (gated) |
+| `deepseek-r1-distill-7b` | `deepseek-ai/DeepSeek-R1-Distill-Qwen-7B` | kiểm tra model card        |
 
 Nếu model gated:
 
@@ -198,12 +198,38 @@ Chạy trên host có GPU CUDA:
 git clone https://github.com/shijiew/QwenSpinQuant ~/QwenSpinQuant
 export QWEN_SPINQUANT_DIR=~/QwenSpinQuant
 
+# Lần đầu: tạo venv riêng cho QwenSpinQuant (pin transformers==4.49.0, torch CUDA)
 bash scripts/spinquant_w4a8.sh \
+  --setup-env \
   --model models/Qwen2.5-7B-Instruct \
   --w-bits 4 --a-bits 8 --kv-bits 16 \
   --out models/qwen-spinquant \
   --yes
+
+# Các lần sau (venv đã có, bỏ --setup-env):
+bash scripts/spinquant_w4a8.sh \
+  --model models/Qwen2.5-7B-Instruct \
+  --out models/qwen-spinquant \
+  --yes
 ```
+
+> **Quan trọng — môi trường Python riêng:** QwenSpinQuant import
+> `is_torch_compile_available` từ `transformers.utils`, API đã bị bỏ ở các bản
+> transformers mới. Nếu dùng chung `.venv` của NanoPi (cài
+> `transformers>=4.44` không giới hạn) sẽ lỗi:
+>
+> ```
+> ImportError: cannot import name 'is_torch_compile_available' from 'transformers.utils'
+> ```
+>
+> Vì vậy script mặc định dùng venv riêng
+> `$QWEN_SPINQUANT_DIR/.venv-spinquant` và **preflight-check** trước khi chạy,
+> báo lỗi rõ ràng nếu thiếu/sai phiên bản. Nếu đã có môi trường tương thích,
+> trỏ thẳng vào nó:
+>
+> ```bash
+> export SPINQUANT_PYTHON=/path/to/venv/bin/python   # transformers==4.49.0
+> ```
 
 Ghi chú:
 
@@ -211,6 +237,27 @@ Ghi chú:
 - Mặc định dùng GPTQ; thêm `--rtn` để dùng RTN.
 - Có thể `--skip-rotation` hoặc `--skip-eval` khi cần chạy lại một bước.
 - Kết quả là checkpoint đã rotate/quantize; bước tiếp theo vẫn là export GGUF.
+- Script tự `cd` vào `$QWEN_SPINQUANT_DIR` nên `--model`/`--out` được đổi sang
+  **đường dẫn tuyệt đối** trước khi gọi `optimize_rotation.py` / `ptq.py`
+  (tránh lỗi đường dẫn tương đối). Repo ID HF (vd `Qwen/Qwen2.5-7B-Instruct`)
+  được giữ nguyên.
+- Script gọi trực tiếp `torch.distributed.run optimize_rotation.py` và
+  `ptq.py`, **không** dùng các script mẫu `scripts/*.sh` của QwenSpinQuant
+  (chúng còn placeholder `your_path`, `your_output_path/`, `your_log_path/`).
+- Thư mục mặc định: `$QWEN_SPINQUANT_DIR/output_rotation` (chứa `R.bin`),
+  `$QWEN_SPINQUANT_DIR/output` (checkpoint), `$QWEN_SPINQUANT_DIR/logs`.
+  Override bằng `SPINQUANT_ROTATION_DIR`, `SPINQUANT_OUTPUT_DIR`,
+  `SPINQUANT_LOG_DIR`.
+- Số GPU: mặc định lấy từ `nvidia-smi` (tối đa 8); chỉnh bằng `--nproc <n>`
+  hoặc `SPINQUANT_NPROC`. Bước eval mặc định 1 GPU (`SPINQUANT_EVAL_NPROC`).
+- Số bước rotation: `SPINQUANT_MAX_STEPS` (mặc định 100);
+  độ dài ngữ cảnh: `SPINQUANT_MODEL_MAX_LENGTH` (mặc định 2048).
+
+**GPU Blackwell (RTX 50xx / sm_120):** cần PyTorch ≥ 2.7 với CUDA 12.8.
+`--setup-env` mặc định cài từ index `cu128`; đổi bằng
+`--torch-index-url` / `SPINQUANT_TORCH_INDEX_URL` nếu máy dùng CUDA khác
+(vd `https://download.pytorch.org/whl/cu121`). Có thể bỏ bước cài torch bằng
+`SPINQUANT_SKIP_TORCH=1` nếu đã cài sẵn torch phù hợp.
 
 Nếu chưa được duyệt license, bỏ qua bước này và dùng PTQ GGUF thông thường (`Q4_K_M`).
 
@@ -219,8 +266,15 @@ Nếu chưa được duyệt license, bỏ qua bước này và dùng PTQ GGUF t
 1. Tạo notebook có GPU T4/L4, bật Internet.
 2. `git clone` repo này và `QwenSpinQuant`.
 3. Upload/tải model vào `/kaggle/working/models/`.
-4. Chạy `bash scripts/spinquant_w4a8.sh ... --out /kaggle/working/out --yes`.
+4. Chạy lần đầu kèm `--setup-env` (tạo venv riêng; Kaggle dùng CUDA 12.x nên
+   có thể cần `--torch-index-url https://download.pytorch.org/whl/cu121`):
+   `bash scripts/spinquant_w4a8.sh --setup-env --model /kaggle/working/models/Qwen2.5-7B-Instruct --out /kaggle/working/out --yes`.
 5. Tải thư mục output về máy, rồi tiếp tục bước export GGUF.
+
+> Venv nằm trong `~/QwenSpinQuant/.venv-spinquant`, không được lưu giữa các
+> phiên Kaggle — phải chạy lại `--setup-env` mỗi phiên mới. Đặt venv ra
+> `/kaggle/working` bằng `--venv /kaggle/working/.venv-spinquant` nếu muốn tái
+> sử dụng trong cùng phiên.
 
 Kaggle có giới hạn thời gian/phiên; checkpoint/model lớn nên lưu output ra
 `/kaggle/working` và tải về ngay sau khi xong.
@@ -252,11 +306,11 @@ LLAMA_CPP_DIR=~/llama.cpp bash scripts/export_gguf.sh \
 Kích thước tham khảo cho 7B:
 
 | Định dạng | Kích thước xấp xỉ |
-|---|---|
-| FP16 | ~14–15 GB |
-| Q8_0 | ~7.5–8 GB |
-| Q4_K_M | ~4.3–4.7 GB |
-| Q4_0 | ~4.0–4.4 GB |
+| ------------ | ---------------------- |
+| FP16         | ~14–15 GB             |
+| Q8_0         | ~7.5–8 GB             |
+| Q4_K_M       | ~4.3–4.7 GB           |
+| Q4_0         | ~4.0–4.4 GB           |
 
 Kiểm tra:
 
@@ -771,24 +825,24 @@ data/results/
 
 ## 7. Phần F — Troubleshooting
 
-| Triệu chứng | Nguyên nhân thường gặp | Cách xử lý |
-|---|---|---|
-| `ModuleNotFoundError: nano_llm` | Chạy sai entrypoint/cwd | Chạy `python run.py ...` từ repo root hoặc `bash scripts/run_board.sh` |
-| `llama-cli not found` | Chưa build/cài llama.cpp | Build trên board, copy vào `/usr/local/bin`, hoặc đặt `llamacpp.binary` tuyệt đối |
-| `GGUF model not found` | `model.path` rỗng/sai | Sửa `config/config.yaml`, đường dẫn tính từ repo root |
-| `librkllmrt.so not found` | Chưa copy runtime | Copy vào `models/` hoặc `lib/`, hoặc set `rkllm.library_path` |
-| `rkllm_init failed` | Sai phiên bản ABI/toolkit | Đối chiếu `rkllm_bindings.py` với `rkllm.h`, dùng đúng release |
-| Tiến trình bị kill/OOM | 7B W8A8 ~8.2 GB; context/seq quá lớn | Dùng GGUF 4-bit, giảm `max_context`, đóng dịch vụ khác, tăng swap chỉ để cứu hộ |
-| Lỗi IOMMU/domain khi chạy NPU | Model > 4 GB/domain | Export `RKNPU_DOMAINS`, không chạy song song nhiều process |
-| `W4A8 not supported` | RK3588S không có kernel W4A8 | Dùng W8A8 (RKLLM), W4A4 (rk-llama.cpp), hoặc GGUF CPU |
-| `Too many open files` | Giới hạn fd thấp | `ulimit -n 65536`, systemd đã đặt `LimitNOFILE` |
-| `Permission denied /dev/ttyUSB0` | User chưa thuộc `dialout` | `sudo usermod -aG dialout $USER`, login lại |
-| API không truy cập được từ LAN | Bind localhost/firewall | `api.host: 0.0.0.0`, mở port 8080, cùng subnet |
-| Benchmark rất chậm | Governor powersave/thermal | Dùng `run_board.sh` (governor performance), kiểm tra nhiệt độ |
-| Nhiệt độ cao | Tản nhiệt kém | Thêm quạt/tản, hạ `n_threads`, nghỉ giữa các run |
-| rsync đứt giữa chừng | Wi-Fi chập chờn | Dùng `--partial --append-verify`, ưu tiên dây LAN |
-| File model hỏng | Copy lỗi | So `sha256sum` hai phía |
-| Kết quả mock toàn 0 | Đang dùng `--force-mock` | Bỏ `--force-mock`, kiểm tra `model.backend` |
+| Triệu chứng                        | Nguyên nhân thường gặp            | Cách xử lý                                                                                  |
+| ------------------------------------ | -------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| `ModuleNotFoundError: nano_llm`    | Chạy sai entrypoint/cwd               | Chạy `python run.py ...` từ repo root hoặc `bash scripts/run_board.sh`                  |
+| `llama-cli not found`              | Chưa build/cài llama.cpp             | Build trên board, copy vào `/usr/local/bin`, hoặc đặt `llamacpp.binary` tuyệt đối  |
+| `GGUF model not found`             | `model.path` rỗng/sai               | Sửa `config/config.yaml`, đường dẫn tính từ repo root                                 |
+| `librkllmrt.so not found`          | Chưa copy runtime                     | Copy vào `models/` hoặc `lib/`, hoặc set `rkllm.library_path`                         |
+| `rkllm_init failed`                | Sai phiên bản ABI/toolkit            | Đối chiếu `rkllm_bindings.py` với `rkllm.h`, dùng đúng release                      |
+| Tiến trình bị kill/OOM            | 7B W8A8 ~8.2 GB; context/seq quá lớn | Dùng GGUF 4-bit, giảm `max_context`, đóng dịch vụ khác, tăng swap chỉ để cứu hộ |
+| Lỗi IOMMU/domain khi chạy NPU      | Model > 4 GB/domain                    | Export `RKNPU_DOMAINS`, không chạy song song nhiều process                                |
+| `W4A8 not supported`               | RK3588S không có kernel W4A8         | Dùng W8A8 (RKLLM), W4A4 (rk-llama.cpp), hoặc GGUF CPU                                        |
+| `Too many open files`              | Giới hạn fd thấp                    | `ulimit -n 65536`, systemd đã đặt `LimitNOFILE`                                        |
+| `Permission denied /dev/ttyUSB0`   | User chưa thuộc `dialout`          | `sudo usermod -aG dialout $USER`, login lại                                                 |
+| API không truy cập được từ LAN | Bind localhost/firewall                | `api.host: 0.0.0.0`, mở port 8080, cùng subnet                                             |
+| Benchmark rất chậm                 | Governor powersave/thermal             | Dùng `run_board.sh` (governor performance), kiểm tra nhiệt độ                           |
+| Nhiệt độ cao                      | Tản nhiệt kém                       | Thêm quạt/tản, hạ `n_threads`, nghỉ giữa các run                                      |
+| rsync đứt giữa chừng             | Wi-Fi chập chờn                      | Dùng `--partial --append-verify`, ưu tiên dây LAN                                        |
+| File model hỏng                     | Copy lỗi                              | So `sha256sum` hai phía                                                                     |
+| Kết quả mock toàn 0               | Đang dùng `--force-mock`           | Bỏ `--force-mock`, kiểm tra `model.backend`                                              |
 
 Kiểm tra nhiệt độ nhanh:
 
