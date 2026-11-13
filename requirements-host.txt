@@ -1,5 +1,10 @@
 # Host x86_64 tooling: model download, GPTQ/SpinQuant, GGUF export, quality eval.
 # This is intentionally separate from requirements.txt (the board/runtime deps).
+#
+# NOTE: Do NOT reuse this environment for QwenSpinQuant. It pins
+# transformers==4.49.0; newer transformers removed
+# transformers.utils.is_torch_compile_available. Use
+# `scripts/spinquant_w4a8.sh --setup-env` to create a dedicated venv instead.
 -r requirements.txt
 huggingface_hub>=0.23
 transformers>=4.44
