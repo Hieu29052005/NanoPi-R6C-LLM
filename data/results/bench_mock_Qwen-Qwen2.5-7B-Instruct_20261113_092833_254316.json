@@ -1,0 +1,294 @@
+{
+  "timestamp": "2026-11-13T09:28:33+0700",
+  "backend": "mock",
+  "model": "Qwen/Qwen2.5-7B-Instruct",
+  "model_size_gb": 0.0,
+  "load_time_s": 0.01,
+  "max_context": 4096,
+  "runs_per_case": 1,
+  "warmup_per_case": 0,
+  "cases": [
+    {
+      "label": "ctx_128",
+      "target_tokens": 128,
+      "prompt_chars": 513,
+      "max_new_tokens": 32,
+      "summary": {
+        "prompt_tokens": {
+          "count": 1,
+          "mean": 128.0,
+          "median": 128.0,
+          "p95": 128.0,
+          "min": 128.0,
+          "max": 128.0
+        },
+        "generated_tokens": {
+          "count": 1,
+          "mean": 32.0,
+          "median": 32.0,
+          "p95": 32.0,
+          "min": 32.0,
+          "max": 32.0
+        },
+        "ttft_s": {
+          "count": 1,
+          "mean": 3.2,
+          "median": 3.2,
+          "p95": 3.2,
+          "min": 3.2,
+          "max": 3.2
+        },
+        "prefill_tok_s": {
+          "count": 1,
+          "mean": 40.0,
+          "median": 40.0,
+          "p95": 40.0,
+          "min": 40.0,
+          "max": 40.0
+        },
+        "decode_tok_s": {
+          "count": 1,
+          "mean": 6.193548387096774,
+          "median": 6.193548387096774,
+          "p95": 6.193548387096774,
+          "min": 6.193548387096774,
+          "max": 6.193548387096774
+        },
+        "total_time_s": {
+          "count": 1,
+          "mean": 8.366666666666667,
+          "median": 8.366666666666667,
+          "p95": 8.366666666666667,
+          "min": 8.366666666666667,
+          "max": 8.366666666666667
+        },
+        "peak_ram_gb": {
+          "count": 1,
+          "mean": 0.01691436767578125,
+          "median": 0.01691436767578125,
+          "p95": 0.01691436767578125,
+          "min": 0.01691436767578125,
+          "max": 0.01691436767578125
+        },
+        "memory_usage_mb": {
+          "count": 1,
+          "mean": 0.0,
+          "median": 0.0,
+          "p95": 0.0,
+          "min": 0.0,
+          "max": 0.0
+        },
+        "text_sample": "Đây là phản hồi mô phỏng từ NanoPi-R6C-LLM. Đây là phản hồi mô phỏng từ NanoPi-R6C-LLM. Đây là phản hồi mô phỏng từ NanoPi-R6C-LLM. Đây là phản hồi mô phỏng từ NanoPi-R6C-LLM."
+      },
+      "runs": [
+        {
+          "text": "Đây là phản hồi mô phỏng từ NanoPi-R6C-LLM. Đây là phản hồi mô phỏng từ NanoPi-R6C-LLM. Đây là phản hồi mô phỏng từ NanoPi-R6C-LLM. Đây là phản hồi mô phỏng từ NanoPi-R6C-LLM.",
+          "prompt_tokens": 128,
+          "generated_tokens": 32,
+          "load_time_s": 0.01,
+          "ttft_s": 3.2,
+          "prefill_time_s": 3.2,
+          "prefill_tok_s": 40.0,
+          "decode_time_s": 5.166666666666667,
+          "decode_tok_s": 6.193548387096774,
+          "total_time_s": 8.366666666666667,
+          "peak_ram_gb": 0.01691436767578125,
+          "memory_usage_mb": 0.0,
+          "backend": "mock",
+          "model": "Qwen/Qwen2.5-7B-Instruct",
+          "extra": {
+            "simulated": true
+          }
+        }
+      ]
+    },
+    {
+      "label": "ctx_512",
+      "target_tokens": 512,
+      "prompt_chars": 2048,
+      "max_new_tokens": 32,
+      "summary": {
+        "prompt_tokens": {
+          "count": 1,
+          "mean": 512.0,
+          "median": 512.0,
+          "p95": 512.0,
+          "min": 512.0,
+          "max": 512.0
+        },
+        "generated_tokens": {
+          "count": 1,
+          "mean": 32.0,
+          "median": 32.0,
+          "p95": 32.0,
+          "min": 32.0,
+          "max": 32.0
+        },
+        "ttft_s": {
+          "count": 1,
+          "mean": 12.8,
+          "median": 12.8,
+          "p95": 12.8,
+          "min": 12.8,
+          "max": 12.8
+        },
+        "prefill_tok_s": {
+          "count": 1,
+          "mean": 40.0,
+          "median": 40.0,
+          "p95": 40.0,
+          "min": 40.0,
+          "max": 40.0
+        },
+        "decode_tok_s": {
+          "count": 1,
+          "mean": 6.193548387096774,
+          "median": 6.193548387096774,
+          "p95": 6.193548387096774,
+          "min": 6.193548387096774,
+          "max": 6.193548387096774
+        },
+        "total_time_s": {
+          "count": 1,
+          "mean": 17.96666666666667,
+          "median": 17.96666666666667,
+          "p95": 17.96666666666667,
+          "min": 17.96666666666667,
+          "max": 17.96666666666667
+        },
+        "peak_ram_gb": {
+          "count": 1,
+          "mean": 0.01703643798828125,
+          "median": 0.01703643798828125,
+          "p95": 0.01703643798828125,
+          "min": 0.01703643798828125,
+          "max": 0.01703643798828125
+        },
+        "memory_usage_mb": {
+          "count": 1,
+          "mean": 0.0,
+          "median": 0.0,
+          "p95": 0.0,
+          "min": 0.0,
+          "max": 0.0
+        },
+        "text_sample": "Đây là phản hồi mô phỏng từ NanoPi-R6C-LLM. Đây là phản hồi mô phỏng từ NanoPi-R6C-LLM. Đây là phản hồi mô phỏng từ NanoPi-R6C-LLM. Đây là phản hồi mô phỏng từ NanoPi-R6C-LLM."
+      },
+      "runs": [
+        {
+          "text": "Đây là phản hồi mô phỏng từ NanoPi-R6C-LLM. Đây là phản hồi mô phỏng từ NanoPi-R6C-LLM. Đây là phản hồi mô phỏng từ NanoPi-R6C-LLM. Đây là phản hồi mô phỏng từ NanoPi-R6C-LLM.",
+          "prompt_tokens": 512,
+          "generated_tokens": 32,
+          "load_time_s": 0.01,
+          "ttft_s": 12.8,
+          "prefill_time_s": 12.8,
+          "prefill_tok_s": 40.0,
+          "decode_time_s": 5.166666666666667,
+          "decode_tok_s": 6.193548387096774,
+          "total_time_s": 17.96666666666667,
+          "peak_ram_gb": 0.01703643798828125,
+          "memory_usage_mb": 0.0,
+          "backend": "mock",
+          "model": "Qwen/Qwen2.5-7B-Instruct",
+          "extra": {
+            "simulated": true
+          }
+        }
+      ]
+    },
+    {
+      "label": "ctx_1024",
+      "target_tokens": 1024,
+      "prompt_chars": 4096,
+      "max_new_tokens": 32,
+      "summary": {
+        "prompt_tokens": {
+          "count": 1,
+          "mean": 1024.0,
+          "median": 1024.0,
+          "p95": 1024.0,
+          "min": 1024.0,
+          "max": 1024.0
+        },
+        "generated_tokens": {
+          "count": 1,
+          "mean": 32.0,
+          "median": 32.0,
+          "p95": 32.0,
+          "min": 32.0,
+          "max": 32.0
+        },
+        "ttft_s": {
+          "count": 1,
+          "mean": 25.6,
+          "median": 25.6,
+          "p95": 25.6,
+          "min": 25.6,
+          "max": 25.6
+        },
+        "prefill_tok_s": {
+          "count": 1,
+          "mean": 40.0,
+          "median": 40.0,
+          "p95": 40.0,
+          "min": 40.0,
+          "max": 40.0
+        },
+        "decode_tok_s": {
+          "count": 1,
+          "mean": 6.193548387096774,
+          "median": 6.193548387096774,
+          "p95": 6.193548387096774,
+          "min": 6.193548387096774,
+          "max": 6.193548387096774
+        },
+        "total_time_s": {
+          "count": 1,
+          "mean": 30.76666666666667,
+          "median": 30.76666666666667,
+          "p95": 30.76666666666667,
+          "min": 30.76666666666667,
+          "max": 30.76666666666667
+        },
+        "peak_ram_gb": {
+          "count": 1,
+          "mean": 0.017040252685546875,
+          "median": 0.017040252685546875,
+          "p95": 0.017040252685546875,
+          "min": 0.017040252685546875,
+          "max": 0.017040252685546875
+        },
+        "memory_usage_mb": {
+          "count": 1,
+          "mean": 0.0,
+          "median": 0.0,
+          "p95": 0.0,
+          "min": 0.0,
+          "max": 0.0
+        },
+        "text_sample": "Đây là phản hồi mô phỏng từ NanoPi-R6C-LLM. Đây là phản hồi mô phỏng từ NanoPi-R6C-LLM. Đây là phản hồi mô phỏng từ NanoPi-R6C-LLM. Đây là phản hồi mô phỏng từ NanoPi-R6C-LLM."
+      },
+      "runs": [
+        {
+          "text": "Đây là phản hồi mô phỏng từ NanoPi-R6C-LLM. Đây là phản hồi mô phỏng từ NanoPi-R6C-LLM. Đây là phản hồi mô phỏng từ NanoPi-R6C-LLM. Đây là phản hồi mô phỏng từ NanoPi-R6C-LLM.",
+          "prompt_tokens": 1024,
+          "generated_tokens": 32,
+          "load_time_s": 0.01,
+          "ttft_s": 25.6,
+          "prefill_time_s": 25.6,
+          "prefill_tok_s": 40.0,
+          "decode_time_s": 5.166666666666667,
+          "decode_tok_s": 6.193548387096774,
+          "total_time_s": 30.76666666666667,
+          "peak_ram_gb": 0.017040252685546875,
+          "memory_usage_mb": 0.0,
+          "backend": "mock",
+          "model": "Qwen/Qwen2.5-7B-Instruct",
+          "extra": {
+            "simulated": true
+          }
+        }
+      ]
+    }
+  ]
+}

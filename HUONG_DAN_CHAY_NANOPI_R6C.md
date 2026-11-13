@@ -195,7 +195,12 @@ python scripts/download_model.py --model llama-3.1-8b --out models
 Chạy trên host có GPU CUDA:
 
 ```bash
-git clone https://github.com/shijiew/QwenSpinQuant ~/QwenSpinQuant
+# Idempotent: clone lần đầu, các lần sau chỉ pull (tránh lỗi "already exists")
+if [ -d ~/QwenSpinQuant ]; then
+  git -C ~/QwenSpinQuant pull --ff-only
+else
+  git clone https://github.com/shijiew/QwenSpinQuant ~/QwenSpinQuant
+fi
 export QWEN_SPINQUANT_DIR=~/QwenSpinQuant
 
 # Lần đầu: tạo venv riêng cho QwenSpinQuant (pin transformers==4.49.0, torch CUDA)
@@ -258,6 +263,26 @@ Ghi chú:
 `--torch-index-url` / `SPINQUANT_TORCH_INDEX_URL` nếu máy dùng CUDA khác
 (vd `https://download.pytorch.org/whl/cu121`). Có thể bỏ bước cài torch bằng
 `SPINQUANT_SKIP_TORCH=1` nếu đã cài sẵn torch phù hợp.
+
+**Muốn tái sử dụng torch CUDA đã có (tránh tải lại vài GB):** tạo venv riêng
+trước, cài torch vào đó, rồi chạy `--setup-env` — script tự phát hiện torch CUDA
+trong venv và bỏ qua bước cài torch:
+
+```bash
+python3 -m venv ~/QwenSpinQuant/.venv-spinquant
+~/QwenSpinQuant/.venv-spinquant/bin/pip install --upgrade pip
+~/QwenSpinQuant/.venv-spinquant/bin/pip install torch torchvision \
+  --index-url https://download.pytorch.org/whl/cu130   # khớp CUDA/torch hiện có
+
+bash scripts/spinquant_w4a8.sh --setup-env \
+  --model models/Qwen2.5-7B-Instruct \
+  --out models/qwen-spinquant \
+  --yes
+```
+
+> `fast-hadamard-transform` cần biên dịch CUDA extension → cần `nvcc` khớp với
+> torch (load module CUDA hoặc thêm `.../cuda/bin` vào `PATH`). Nếu đã cài sẵn
+> gói này trong venv, thêm `SPINQUANT_SKIP_HADAMARD=1`.
 
 Nếu chưa được duyệt license, bỏ qua bước này và dùng PTQ GGUF thông thường (`Q4_K_M`).
 

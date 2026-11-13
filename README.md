@@ -101,7 +101,7 @@ python scripts/download_model.py --model qwen2.5-7b --out models
 # 2) (Tùy chọn) SpinQuant rotation + GPTQ/RTN W4A8
 #    LICENSE: CC-BY-NC 4.0 (phi thương mại) — cần legal duyệt trước.
 #    --setup-env tạo venv riêng (transformers==4.49.0, torch CUDA) — chạy 1 lần.
-git clone https://github.com/shijiew/QwenSpinQuant ~/QwenSpinQuant
+git clone https://github.com/shijiew/QwenSpinQuant ~/QwenSpinQuant  # bỏ qua nếu đã có
 bash scripts/spinquant_w4a8.sh --setup-env --model models/Qwen2.5-7B-Instruct --out models/qwen-spinquant --yes
 #    Các lần sau bỏ --setup-env:
 # bash scripts/spinquant_w4a8.sh --model models/Qwen2.5-7B-Instruct --out models/qwen-spinquant --yes

@@ -148,10 +148,17 @@ if [ -n "$OUT_DIR" ]; then
 fi
 
 if [ -z "$SPINQUANT_NPROC" ]; then
+  detected=0
   if command -v nvidia-smi >/dev/null 2>&1; then
-    SPINQUANT_NPROC="$(nvidia-smi -L 2>/dev/null | wc -l | tr -d ' ')"
+    detected="$(nvidia-smi -L 2>/dev/null | wc -l | tr -d ' ' || true)"
   fi
-  SPINQUANT_NPROC="${SPINQUANT_NPROC:-1}"
+  case "$detected" in
+    ''|*[!0-9]*) detected=0 ;;
+  esac
+  if [ "$detected" -lt 1 ]; then
+    detected=1
+  fi
+  SPINQUANT_NPROC="$detected"
 fi
 if [ "$SPINQUANT_NPROC" -gt 8 ]; then
   SPINQUANT_NPROC=8
@@ -179,9 +186,13 @@ setup_env() {
   "$SPINQUANT_VENV/bin/pip" install --upgrade pip wheel setuptools
 
   if [ "${SPINQUANT_SKIP_TORCH:-0}" != "1" ]; then
-    echo "==> installing PyTorch from $SPINQUANT_TORCH_INDEX_URL"
-    # shellcheck disable=SC2086
-    "$SPINQUANT_VENV/bin/pip" install $SPINQUANT_TORCH_PACKAGES --index-url "$SPINQUANT_TORCH_INDEX_URL"
+    if "$SPINQUANT_VENV/bin/python" -c "import torch; raise SystemExit(0 if torch.cuda.is_available() else 1)" >/dev/null 2>&1; then
+      echo "==> CUDA torch already available in venv; skipping torch install"
+    else
+      echo "==> installing PyTorch from $SPINQUANT_TORCH_INDEX_URL"
+      # shellcheck disable=SC2086
+      "$SPINQUANT_VENV/bin/pip" install $SPINQUANT_TORCH_PACKAGES --index-url "$SPINQUANT_TORCH_INDEX_URL"
+    fi
   else
     echo "==> skipping PyTorch install (SPINQUANT_SKIP_TORCH=1)"
   fi
@@ -202,7 +213,18 @@ setup_env() {
       echo "ERROR: git is required to install fast-hadamard-transform" >&2
       exit 2
     fi
-    "$SPINQUANT_VENV/bin/pip" install "git+https://github.com/Dao-AILab/fast-hadamard-transform.git"
+    if ! command -v nvcc >/dev/null 2>&1; then
+      echo "WARN: nvcc not found in PATH; fast-hadamard-transform needs the CUDA toolkit to build." >&2
+      echo "      Load the matching CUDA module (e.g. 'module load cuda/12.8') or add its bin/ to PATH." >&2
+    fi
+    if ! "$SPINQUANT_VENV/bin/pip" install "git+https://github.com/Dao-AILab/fast-hadamard-transform.git"; then
+      cat >&2 <<'EOF'
+ERROR: failed to build fast-hadamard-transform.
+  * Make sure the CUDA toolkit (nvcc) matches the installed torch version.
+  * Or install it manually into the venv, then re-run with SPINQUANT_SKIP_HADAMARD=1.
+EOF
+      exit 2
+    fi
   fi
 }
 
@@ -217,7 +239,23 @@ elif [ -x "$SPINQUANT_VENV/bin/python" ]; then
 elif [ -x "$QWEN_SPINQUANT_DIR/.venv/bin/python" ]; then
   PY="$QWEN_SPINQUANT_DIR/.venv/bin/python"
 else
-  PY="$(command -v python3 || command -v python || true)"
+  out_arg=""
+  if [ -n "$OUT_DIR" ]; then
+    out_arg="--out \"$OUT_DIR\" "
+  fi
+  cat >&2 <<EOF
+ERROR: no dedicated QwenSpinQuant venv found.
+  Expected: $SPINQUANT_VENV
+  Do NOT reuse the NanoPi host .venv: it ships a newer transformers and QwenSpinQuant
+  needs transformers==4.49.0.
+
+Fix (one time):
+  bash scripts/spinquant_w4a8.sh --setup-env --model "$MODEL" ${out_arg}--yes
+
+Or point at an existing compatible interpreter:
+  export SPINQUANT_PYTHON=/path/to/venv/bin/python
+EOF
+  exit 2
 fi
 if [ -z "$PY" ] || [ ! -x "$PY" ]; then
   echo "ERROR: no usable Python interpreter found" >&2
