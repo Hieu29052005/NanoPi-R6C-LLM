@@ -18,3 +18,8 @@ eval/vmlu/*.jsonl
 .DS_Store
 .venv/
 __pycache__/
+
+/QwenSpinQuant_tung/output_ptq/
+/QwenSpinQuant_tung/rotation/
+*.gguf
+gguf/
