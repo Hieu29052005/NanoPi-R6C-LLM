@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 import argparse
+import errno
 import importlib.util
 import os
 import random
+import socket
 import sys
 from typing import List, Optional
 
@@ -51,6 +53,23 @@ def _has_module(name: str) -> bool:
     return importlib.util.find_spec(name) is not None
 
 
+def _check_api_bind(host: str, port: int) -> Optional[str]:
+    """Return an actionable error if the API address is already occupied."""
+    try:
+        with socket.socket(socket.AF_INET6 if ":" in host else socket.AF_INET, socket.SOCK_STREAM) as sock:
+            if ":" in host:
+                sock.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_V6ONLY, 0)
+            sock.bind((host, port))
+    except OSError as exc:
+        if exc.errno == errno.EADDRINUSE:
+            return (
+                f"API address {host}:{port} is already in use. Stop the process using it, "
+                f"or start this server on another port with --port <port>."
+            )
+        return f"Cannot bind API address {host}:{port}: {exc}"
+    return None
+
+
 def print_check(cfg: Config) -> int:
     summary = cfg.summary()
     mem = read_meminfo_gb()
@@ -92,6 +111,13 @@ def main(argv: Optional[List[str]] = None) -> int:
 
     if args.check:
         return print_check(cfg)
+
+    serving = not (args.prompt or args.demo or args.bench or args.serve is False)
+    if serving:
+        bind_error = _check_api_bind(cfg.api.host, cfg.api.port)
+        if bind_error:
+            print(bind_error, file=sys.stderr)
+            return 1
 
     llm = build_slm(cfg, force_mock=args.force_mock)
     try:

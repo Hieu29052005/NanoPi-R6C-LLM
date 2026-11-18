@@ -218,7 +218,15 @@ def evaluate(llm, samples: List[Dict[str, Any]], max_new_tokens: int = 8) -> Dic
 def main() -> int:
     parser = argparse.ArgumentParser(description="Evaluate VMLU with the configured backend")
     parser.add_argument("--config", default=os.path.join(ROOT, "config", "config.yaml"))
-    parser.add_argument("--backend", default=None, help="override model.backend")
+    parser.add_argument("--backend", default=None, help="override model.backend (hf/gguf/mock)")
+    parser.add_argument("--model", default=None, help="override model.path (local dir or .gguf)")
+    parser.add_argument("--device", default=None, help="override model.device (cpu/cuda/auto)")
+    parser.add_argument(
+        "--ngl",
+        type=int,
+        default=None,
+        help="override llamacpp.n_gpu_layers for the gguf backend (default: 99 on CUDA)",
+    )
     parser.add_argument("--force-mock", action="store_true")
     parser.add_argument("--dataset", default=None, help="local JSON/JSONL or HF dataset id")
     parser.add_argument("--split", default=None)
@@ -232,6 +240,15 @@ def main() -> int:
     cfg = load_config(args.config, ROOT)
     if args.backend:
         cfg.model.backend = args.backend
+    if args.model:
+        cfg.model.path = args.model
+    if args.device:
+        cfg.model.device = args.device
+    if args.ngl is not None:
+        cfg.llamacpp.n_gpu_layers = args.ngl
+    elif cfg.model.backend in ("gguf", "llamacpp", "llama.cpp", "llama_cpp"):
+        # Host có CUDA -> offload mọi layer. Build CPU-only sẽ tự bỏ qua giá trị này.
+        cfg.llamacpp.n_gpu_layers = 99
     source = args.dataset or cfg.eval.vmlu_dataset
     if not source:
         print("ERROR: no dataset. Download VMLU and pass --dataset <file>, or set eval.vmlu_dataset.")

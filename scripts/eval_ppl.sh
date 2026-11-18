@@ -10,8 +10,20 @@ CTX=2048
 CHUNKS=64
 THREADS=4
 OUT="$ROOT/data/results/ppl.json"
-BIN="${LLAMA_PERPLEXITY:-llama-perplexity}"
-GPU_LAYERS=0
+# Tự tìm binary: LLAMA_PERPLEXITY > build của llama.cpp > PATH.
+# llama.cpp thường không được `make install`, nên binary nằm ở build/bin, không có trên PATH.
+if [ -n "${LLAMA_PERPLEXITY:-}" ]; then
+  BIN="$LLAMA_PERPLEXITY"
+elif [ -x "$HOME/llama.cpp/build/bin/llama-perplexity" ]; then
+  BIN="$HOME/llama.cpp/build/bin/llama-perplexity"
+elif command -v llama-perplexity >/dev/null 2>&1; then
+  BIN="$(command -v llama-perplexity)"
+else
+  BIN="llama-perplexity"
+fi
+# Mặc định offload mọi layer lên GPU nếu llama.cpp được build có CUDA.
+# Trên build CPU-only, llama.cpp tự bỏ qua giá trị này (chỉ in warning).
+GPU_LAYERS="${LLAMA_GPU_LAYERS:-99}"
 DRY_RUN=0
 
 usage() {
@@ -24,9 +36,9 @@ Options:
   --ctx <n>            Context size (default: 2048)
   --chunks <n>         Number of chunks (default: 64)
   --threads <n>        CPU threads (default: 4)
-  --gpu-layers <n>     Offload layers to GPU (default: 0)
+  --gpu-layers <n>     Offload layers to GPU (default: $LLAMA_GPU_LAYERS or 99)
   --out <json>         Summary JSON output
-  --bin <path>         llama-perplexity binary (default: $LLAMA_PERPLEXITY or PATH)
+  --bin <path>         llama-perplexity binary (default: $LLAMA_PERPLEXITY, ~/llama.cpp/build/bin, then PATH)
   --dry-run            Print the command only
   -h, --help
 EOF
@@ -68,7 +80,7 @@ if [ "$DRY_RUN" = "1" ]; then
 fi
 if ! command -v "$BIN" >/dev/null 2>&1 && [ ! -x "$BIN" ]; then
   echo "ERROR: llama-perplexity not found: $BIN" >&2
-  echo "  Build llama.cpp or set LLAMA_PERPLEXITY=/path/to/llama-perplexity" >&2
+  echo "  Build llama.cpp or set LLAMA_PERPLEXITY=/path/to/llama-perplexity (or pass --bin)" >&2
   exit 2
 fi
 
