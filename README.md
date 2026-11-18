@@ -3,8 +3,9 @@
 Toolkit tải model, lượng tử hoá, đánh giá chất lượng/hiệu năng và phục vụ suy luận
 cho **Qwen2.5-7B-Instruct** (khuyến nghị) trên **NanoPi-R6C (RK3588S, 8 GB RAM, NPU 6 TOPS)**.
 Kế hoạch chi tiết nằm ở `KE_HOACH_QUANTIZE_QWEN7B_4BIT_NANOPI_R6C.md`.
-Hướng dẫn chạy từ laptop → đẩy model/code lên board → chạy trên R6C:
-**`HUONG_DAN_CHAY_NANOPI_R6C.md`**.
+Hướng dẫn **end-to-end** từ quantize trên 2×RTX 5080 (CUDA 13 + SpinQuant W4A8)
+→ export GGUF → đẩy code/model lên board → benchmark/đo công suất trên R6C:
+**`HUONG_DAN_CHAY_NANOPI_R6C.md`** (có phần Phase 0: các hotfix cần áp trước khi chạy).
 
 Mặc định mọi backend là **mock**, nên repo chạy được ngay trên laptop, không cần NPU/model.
 
@@ -109,8 +110,12 @@ LLAMA_CPP_DIR=~/llama.cpp bash scripts/export_gguf.sh \
 
 # 4) Chất lượng
 python scripts/eval_quality.py --model models/Qwen2.5-7B-Instruct --device cuda
-python scripts/eval_vmlu.py --dataset /path/to/vmlu.json --limit 500
+python scripts/prepare_vmlu.py --split valid   # lần đầu: tải + chuẩn hóa VMLU
+python scripts/eval_vmlu.py --dataset data/vmlu/vmlu_valid.jsonl --backend hf --model models/Qwen2.5-7B-Instruct --device cuda --limit 500
+python scripts/eval_vmlu.py --dataset data/vmlu/vmlu_valid.jsonl --backend gguf --model data/gguf/Qwen2.5-7B-Instruct-Q4_K_M.gguf --ngl 99 --limit 500
 bash scripts/eval_ppl.sh --model data/gguf/Qwen2.5-7B-Instruct-Q4_K_M.gguf
+# Đánh giá Δ so với ngưỡng: xem HUONG_DAN_CHAY_NANOPI_R6C.md mục 4.5
+# và báo cáo chi tiết data/results/BAO_CAO_DANH_GIA_CHAT_LUONG_PHASE4.md
 
 # 5) Calibration + .rkllm W8A8 (chỉ cho model ≤3B)
 python scripts/generate_calibration.py --output data/calibration.json --count 128
