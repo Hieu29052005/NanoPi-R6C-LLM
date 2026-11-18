@@ -65,9 +65,10 @@ eval:
   output_dir: data/results
   ppl_corpus: data/corpus/wikitext-2-raw-val.txt
   ppl_chunks: 64
-  # Local JSON/JSONL or a HuggingFace dataset id, e.g. "tridm/VMLU".
-  vmlu_dataset: ""
-  vmlu_split: validation
+  # Local JSON/JSONL prepared by scripts/prepare_vmlu.py, or a HF dataset id.
+  # test.jsonl of VMLU has no answers; use the normalized valid split.
+  vmlu_dataset: data/vmlu/vmlu_valid.jsonl
+  vmlu_split: valid
   vmlu_limit: 500
   vmlu_subjects: []
   prompts_vi: eval/prompts_vi.jsonl
